@@ -1,0 +1,21 @@
+services:
+  - type: web
+    name: rudhra-bot
+    env: node
+    branch: main
+    repo: https://github.com/princerudh/rudhra-bot.git
+    buildCommand: npm install
+    startCommand: npm start
+    plan: free
+    autoDeploy: false
+    envVars:
+      - key: SESSION_ID
+        sync: false
+      - key: MODE
+        value: private
+      - key: SERVER
+        value: render
+      - key: CAPTION
+        value: RUDHRA
+      - key: SUDO
+        value: 919895809960

@@ -1,0 +1,32 @@
+{
+  "name": "rudhra-bot",
+  "description": "Multi Device whatsapp bot",
+  "logo": "https://i.imgur.com/We9h8KU.jpeg",
+  "keywords": ["whatsapp"],
+  "repository": "https://github.com/princerudh/rudhra_3",
+  "stack": "container",
+  "env": {
+    "SESSION_ID": {
+      "description": " session id",
+      "required": true
+    },
+    "SUDO": {
+      "description": "sudo numbers with country code seperate with , for multiple numbers",
+      "required": false
+    },
+    "MODE": {
+      "description": "bot work mode",
+      "required": "true",
+      "value": "private"
+     }
+ },
+ "addons": [{
+      "plan": "heroku-postgresql"
+    }],
+    "buildpacks": [{
+      "url": "heroku-community/apt"
+      },
+      {
+      "url": "https://github.com/clhuang/heroku-buildpack-webp-binaries.git"
+      }]
+  }
