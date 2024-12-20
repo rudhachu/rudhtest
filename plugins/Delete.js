@@ -1,40 +1,37 @@
-const { rudhra, mode, serialize, loadMessage, getName } = require("../lib/");
-const { DELETED_LOG_CHAT, DELETED_LOG } = require("../config");
+const { rudhra, mode, serialize, loadMessage, getName, numToJid } = require("../lib/");
+const { ANTI_DELETE, SUDO } = require("../config");
 
-rudhra(
-  {
-    on: "delete",
-    fromMe: false,
-    desc: "Logs the recent deleted message",
-  },
-  async (message, match) => {
-    if (!DELETED_LOG) return;
-    if (!DELETED_LOG_CHAT || "")
-      return await message.sendMessage(
-        message.user,
-        "Please set DELETED_LOG_CHAT in ENV to use log delete message"
-      );
-    let msg = await loadMessage(message.messageId);
-    if (!msg) return;
-    msg = await serialize(
-      JSON.parse(JSON.stringify(msg.message)),
-      message.client
-    );
-    if (!msg) return await message.reply("No deleted message found");
-    let deleted = await message.forward(DELETED_LOG_CHAT, msg.message);
-    var name;
-    if (!msg.from.endsWith("@g.us")) {
-      let getname = await getName(msg.from);
-      name = `_Name : ${getname}_`;
-    } else {
-      let gname = (await message.client.groupMetadata(msg.from)).subject;
-      let getname = await getName(msg.sender);
-      name = `_Group : ${gname}_\n_Name : ${getname}_`;
-    }
-    return await message.sendMessage(
-      DELETED_LOG_CHAT,
-      `_Message Deleted_\n_From : ${msg.from}_\n${name}+\n_SenderJid : ${msg.sender}_`,
-      { quoted: deleted }
-    );
+rudhra({
+  on: "delete",
+  fromMe: false,
+  desc: 'anti delete',
+  type: 'whatsapp'
+}, async (message) => {
+  if (ANTI_DELETE) {
+    // Load the deleted message from the store
+    let msg = await message.client.store.loadMessage(message.messageId);
+    
+    // Extract the sender's name (if available)
+    let { pushName } = msg.message;
+    let name = pushName.trim().replace(/\s+/g, ' ') || "unable to find the name";
+    
+    // Get the SUDO user ID (fallback to the bot's user ID)
+    let sudo = numToJid(SUDO.split(',')[0]) || message.client.user.id;
+    
+    // Forward the deleted message to the SUDO user
+    await message.rudhforwardMessage(sudo, msg.message, {
+      contextInfo: {
+        isFrowarded: false,
+        externalAdReply: {
+          title: "deleted message",
+          body: `from: ${name}`,
+          mediaType: 1,
+          thumbnailUrl: "https://i.imgur.com/NezTSpv.png",
+          mediaUrl: "https://www.youtube.com/princerudh",
+          sourceUrl: "https://www.youtube.com/princerudh"
+        }
+      },
+      quoted: msg.message
+    });
   }
-);
+});
